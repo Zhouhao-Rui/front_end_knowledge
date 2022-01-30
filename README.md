@@ -2846,3 +2846,144 @@ new Promise((resolve, reject) => {
 
 finally方法在Promise调用完之后执行一些清理工作
 
+### 13.8 Promise的类方法
+
+- resolve：直接调用Promise.resolve相当于new Promise((resolve, reject) => resolve())
+
+- Reject: 直接调用Promise.reject相当于new Promise((resolve, reject) => reject())
+
+- All: 可以创建多个Promise，当所有Promise对象执行结束后，得到结果集合。
+
+如果其中一个promise被reject了，那么所有的promise会被reject，不执行
+
+```javascript
+Promise.all([p1, p2, p3]).then(res => {console.log(res)})
+```
+
+- allSettled: 会返回一个数组，里面每个对象包含status和res，不会受reject影响
+
+```js
+[
+	{status: 'rejected', reason: 'network err'},
+  {status: 'fulfilled', value: 'success'}
+]
+```
+
+- Race: 只要有一个promise对象fulfilled，那么就直接终止Promise
+
+- Any: 至少要等到一个promise fulfilled，才会终止Promise，不会受reject的影响
+
+|            | 都会调用 | 受reject影响 |
+| ---------- | -------- | ------------ |
+| All        | 是       | 是           |
+| allSettled | 是       | 否           |
+| Race       | 否       | 是           |
+| Any        | 否       | 否           |
+
+### 13.9 Promise的简单实现
+
+```javascript
+const PENDING = 'pending'
+const FULFILLED = 'fulfilled'
+const REJECTED = 'rejected'
+class MyPromise {
+    constructor(fn) {
+        this.status = PENDING
+        this.value = undefined
+        this.reason = undefined
+        const resolve = (value) => {
+            /**
+             * setTimeout是宏任务，会在所有代码执行后，才会执行
+             */
+            setTimeout(() => {
+                if (this.status == PENDING) {
+                    this.status = FULFILLED
+                    this.value = value
+                    console.log('resolve...')
+                    this.onFulfilled(value)
+                }
+            }, 0)     
+        }
+
+        const reject = (reason) => {
+            queueMicrotask(() => {
+                if (this.status == PENDING) {
+                    this.status = REJECTED
+                    this.reason = reason
+                    console.log('reject...')
+                    this.onRejected(reason)
+                }
+            })         
+        }
+        fn(resolve, reject)
+    }
+    then(onFulfilled, onRejected) {
+        this.onFulfilled = onFulfilled
+        this.onRejected = onRejected
+    }
+}
+
+const promise = new MyPromise((resolve, reject) => {
+    console.log('pending...')
+    resolve(11)
+    reject(22)
+})
+
+promise.then(res => {
+    console.log(res)
+}, err => {
+    console.log(err)
+})
+```
+
+改进1:保证多个promise调用也能使用，将onFilfilled和onRejected放入数组中，遍历执行
+
+```
+this.onFulfilledFns和this.onRejectedFns
+```
+
+## 14. Iterator和generator
+
+Iterator:在容器对象中遍历所有的数据（链表，数组等），不需要关心容器的内部结构
+
+迭代器定义了数据生成的方式，在javascript中是next函数
+
+next是一个无参数的函数，返回两个值：
+
+- done： 如果是最后一个，为true，否则为false
+- value：done为true时会忽略，否则为任意一个值
+
+```javascript
+const names = ['asd', 'd', 'vvf', 'zc']
+let index = 0
+const name_iterator = {
+    next() {
+        if (index < names.length) {
+            return {
+                done: false,
+                value: names[index ++]
+            }
+        } else {
+            return {
+                done: true,
+                value: undefined
+            }
+        }
+    }
+}
+
+console.log(name_iterator.next())
+console.log(name_iterator.next())
+console.log(name_iterator.next())
+console.log(name_iterator.next())
+console.log(name_iterator.next())
+console.log(name_iterator.next())
+
+// result
+{ done: false, value: 'asd' }
+{ done: false, value: 'd' }
+{ done: false, value: 'vvf' }
+{ done: false, value: 'zc' }
+{ done: true, value: undefined }
+{ done: true, value: undefined }
+```
