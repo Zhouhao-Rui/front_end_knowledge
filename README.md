@@ -2791,7 +2791,7 @@ class Promise {
 
 使用一个变量将callback保存，到resolve方法中执行
 
-如果then方法返回一个值，这个值会被作为参数传递到一个新的Promise的resolve中作为回调
+**如果then方法返回一个值，这个值会被作为参数传递到一个新的Promise的resolve中作为回调**
 
 ```javascript
 new Promise((resolve, reject) => {
@@ -2944,6 +2944,8 @@ this.onFulfilledFns和this.onRejectedFns
 
 ## 14. Iterator和generator
 
+### 14.1 迭代器
+
 Iterator:在容器对象中遍历所有的数据（链表，数组等），不需要关心容器的内部结构
 
 迭代器定义了数据生成的方式，在javascript中是next函数
@@ -2987,3 +2989,791 @@ console.log(name_iterator.next())
 { done: true, value: undefined }
 { done: true, value: undefined }
 ```
+
+将迭代器进行封装
+
+```javascript
+function createArrayIterator(arr) {
+    let idx = 0
+    return {
+        next: function() {
+            return {
+                done: idx < arr.length? false: true,
+                value: arr[idx++]
+            }
+        }
+    }
+}
+
+console.log(createArrayIterator(names).next())
+```
+
+无限迭代器：
+
+如果done一直是false的话，那么就是无限的迭代器
+
+### 14.2 可迭代对象
+
+当一个对象实现了iteratable protocol，就是可迭代函数（next function）
+
+实现Symbol.iterator访问实现的@@iterator属性
+
+```javascript
+const iterableObj = {
+    nums: [1, 2, 3],
+    [Symbol.iterator]: function () {
+        let index = 0
+        return {
+            next: () => {
+                return {
+                    done: index < this.nums.length ? false: true,
+                    value: index < this.nums.length ? this.nums[index++]: undefined
+                }
+            }
+        }
+    }
+}
+
+const iterator = iterableObj[Symbol.iterator]()
+console.log(iterator.next())
+console.log(iterator.next())
+console.log(iterator.next())
+```
+
+使用for...of进行遍历，要求对象必须是可迭代对象，本质上是使用iterator.next()，然后取值value
+
+### 14.3 内置的可迭代对象
+
+javascript内置的array，Map，set， arguments都是iterator对象
+
+```javascript
+const foos = ['abc', 'cba', 'nba']
+foo_iterator = foos[Symbol.iterator]()
+console.log(foo_iterator.next())
+```
+
+### 14.4 给Class创建迭代器
+
+```javascript
+/**
+ * 使用场景
+ */
+class Classroom {
+    constructor(location, name, students) {
+        this.location = location
+        this.name = name
+        this.students = students
+    }
+
+    entry(new_stu) {
+        this.students.push(new_stu) 
+    }
+
+    [Symbol.iterator]() {
+        let idx = 0
+        return {
+            next: () => {
+                if (idx < this.students.length) {
+                    return {done: false, value: this.students[idx ++]}
+                } else {
+                    return {done: true, value: undefined}
+                }
+            },
+            return() {
+                console.log('finish...')
+                return {done: true, value: undefined}
+            }
+        }
+    }
+}
+
+var classroom = new Classroom("east", "ll", [
+    'rts',
+    'asd',
+    'thgt'
+])
+
+for (const item of classroom) {
+    console.log(item)
+    if (item === 'asd') break;
+}
+
+```
+
+使用return可以监听迭代器的提前终止
+
+### 14.5 Generator 生成器
+
+生成器能够对函数进行精准的控制，例如暂停和运行
+
+生成器函数：
+
+- 在function后面加上*
+- 生成器函数中可以使用yield关键字来控制函数的执行流程
+- 返回一个生成器(特殊的迭代器，也有next方法)
+
+执行生成器函数，返回了一个生成器对象，使用next function可以遍历。
+
+generator的返回值是最后一次迭代的迭代器返回对象的value
+
+如果在最后一次iteration之前return的话，会直接终止function
+
+如果想在某次iteration之后返回值可以 yield value
+
+### 14.6 生成器传参数
+
+每个iteration的参数都是上一个iteration的返回值的value
+
+```javascript
+function* _generator() {
+    console.log('start...')
+    console.log('111')
+  	// 这里yield的value会变成10
+    const n = yield 
+    console.log(100 * n)
+    console.log('222')
+    yield 
+    console.log('end...')
+}
+
+const generator = _generator()
+generator.next()
+generator.next(10)
+generator.next()
+```
+
+### 14.7 生成器return和throw方法
+
+如果直接调用generator.return，会直接终止代码
+
+如果调用throw方法的话，会抛出异常
+
+### 14.8 yield*
+
+会把所有的可迭代对象都进行yield，类似yield* array
+
+```javascript
+class _Classroom {
+    constructor(name, students) {
+        this.name = name
+        this.students = students
+    }
+
+    entry(student) {
+        this.students.push(student)
+    }
+
+    [Symbol.iterator] = function* () {
+        yield* this.students
+    }
+}
+
+const class_generator = new _Classroom('123', [1, 2, 3])
+for (item of class_generator) {
+    console.log(item)
+}
+```
+
+### 14.9 **使用generator解决回调地狱 & async await
+
+```js
+function requestData(url) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(url)
+        }, 1000)
+    })
+}
+
+requestData('user').then(res => {
+    requestData(res + '111').then(res => {
+        requestData(res + '222').then(res => {
+            console.log(res)
+        })
+    })
+})
+```
+
+```javascript
+function* getData() {
+    const res1 = yield requestData('user')
+    const res2 = yield requestData(res1 + 'bbb')
+    const res3 = yield requestData(res2 + 'ccc')
+    console.log(res3)
+}
+
+function exec_generators(genFn) {
+    const generator = genFn()
+
+    function exec(res) {
+        // 得到当前一次yield的结果
+        const result = generator.next(res)
+        // 如果done是true，说明结束了，返回result
+        // 如果done是false，说明还没结束，将res传入重新执行requestData
+        if(result.done) {
+            return result.value
+        } else {
+            result.value.then(res => {
+                exec(res)
+            })
+        }
+    }
+
+    exec()
+}
+
+exec_generators(getData)
+```
+
+generator和Promise的语法糖是async和await
+
+## 15. async await 事件循环
+
+### 15.1 async中是普通的代码
+
+async 如果内部都是普通的代码，还是同步的执行所有的逻辑
+
+```javascript
+async foo() {
+	console.log('111')
+}
+
+console.log('start') // start
+foo() // 111
+console.log('end') // end
+```
+
+async函数默认的返回值是一个Promise，return的值会作为Promise对象的参数进行传值
+
+```javascript
+async foo() {
+	console.log('foo')
+}
+
+const promise = foo()
+promise.then(res => {
+	console.log(res) // undefined
+})
+```
+
+也可以传Promise或者thenable Object
+
+### 15.2 async中有异常代码
+
+会把异常作为Promise中的reject的值
+
+```javascript
+async foo() {
+	throw new Error('123')
+}
+
+foo().catch(err => console.log(err))
+// 不会阻塞代码
+console.log('start')
+```
+
+### 15.3 async 中使用await
+
+await 返回值（Promise对象）
+
+结果是Promise执行了resolve之后得到的数据
+
+如果await一直没有resolve，那么后续代码都不会执行。
+
+本质上是一个**回调地狱**
+
+```javascript
+async function foo() {
+	await requestData()
+	await requestData2()
+	console.log(res)
+	=>
+	requestData().then(res => {
+    ...
+		requestData2().then(res => {
+      ...
+			console.log('res')
+		})
+	})
+}
+```
+
+
+
+### 15.4 Process and Thread
+
+Process: 计算机已经运行的程序，是操作系统管理程序的一部分
+
+Thread: 操作系统能够调度的最小单位，包含在Process中。在一个Process中至少需要一个Thread来执行程序，这个Thread叫做main Thread
+
+javascript是单线程的，进程容器是node或者浏览器
+
+如果一个事件非常耗时，那么javascript的线程就会被阻塞
+
+比如像定时器和网络请求，由浏览器的其他线程来存储callback function，到特定的时刻进行调用
+
+如何存储事件：事件队列（event queue），到需要执行的时候出列进行执行
+
+事件循环（event loop）：js线程 =》第三方线程 =〉事件队列 =》js线程
+
+### 15.5 MacroTask and MicroTask
+
+宏任务队列：定时器，DOM，ajax
+
+微任务队列：queueMicroTask，Promise.then，MutationObserver API
+
+在执行宏任务之前，会要求先把微任务全部清空（微任务的优先级大于宏任务）
+
+### 15.6 Node事件循环
+
+Node中用libuv实现的，主要维护了一个EventLoop和worker Threads（线程池），EventLoop负责调用系统的一些其他操作：I/O，Network...
+
+事件循环就像一个桥梁，连接着javascript和系统调用之间的通道
+
+无论是文件I/O，数据库，定时器等一系列javascrit无法承受的操作，都会交给libuv，放入到事件循环队列中，之后从任务队列中不断拿出事件进行调用
+
+一次完整的事件循环（Tick）阶段：
+
+1. 定时器阶段，本阶段执行SetTimeout和setInterval等
+2. 待定回调（pending callback）：TCP连接等，出现错误
+3. idle，prepare: node内部
+4. 事件轮询（poll）：检索I/O事件，执行I/O回调(容易阻塞，因为事件轮询很多操作立即执行)
+5. 检测（Check）：setImmediate(长时间运行的操作，当其他函数全部执行完，再执行这个函数)
+6. 关闭回调：Socket.close（）
+
+宏任务：setTimeout，setInterval，IO，setImmediate
+
+微任务：process.nextTick，QueueMicroTask，Promise.then
+
+**在任何宏任务阶段执行之前，都会把微任务结束**
+
+### 15.6 面试题
+
+```javascript
+/**
+* 不会马上执行，因为在宏队列
+*/
+setTimeout(() => {
+    console.log('settimeout1')
+
+    new Promise(function (resolve) {
+      	// 加入到microTask
+        resolve()
+    }).then(function () {
+        new Promise(function (resolve) {
+          	// 加入到microTask
+            resolve()
+        }).then(function () {
+            console.log('then4')
+        })
+        console.log('then2')
+    })
+})
+
+new Promise(function (resolve) {
+  	// 立即执行
+    console.log('promise1')
+  	// 调用then，加入microQueue
+    resolve()
+}).then(function () {
+    console.log('then1')
+})
+
+/**
+* 加入到宏任务中
+*/
+setTimeout(() => {
+    console.log('setTimeout2')
+})
+
+// 立即执行
+console.log(2)
+
+/**
+* 加入到MicroQueue
+*/
+queueMicrotask(() => {
+    console.log('queueMicroTask1')
+})
+
+/**
+* 立即执行
+* then加入到MicroQueue
+*/
+new Promise(function (resolve) {
+    resolve()
+}).then(function () {
+    console.log('then3')
+})
+
+// promise1 2 then1 queueMicroTask1 then3 settimeout1 then2 then4 settimeout2
+```
+
+```javascript
+async function async1() {
+    console.log('async1 start')
+    await async2()
+    console.log('async1 end')
+}
+
+async function async2() {
+    console.log('async2')
+}
+
+console.log('script start')
+
+setTimeout(() => {
+    console.log('setTimeout')
+}, 0)
+
+async1()
+
+new Promise(function (resolve) {
+    console.log('promise1')
+    resolve()
+}).then(function () {
+    console.log('promise2')
+})
+console.log('script end')
+
+// script start
+// async1 start
+// async2 
+** async2 之后就会返回一个 New Promise(resolve => resolve())，所以之后的async1 end默认全在thenable里面，所以加入到microTask
+// promise1 
+// script end
+// async1 end 
+// promise2 
+// settimeout
+```
+
+```javascript
+Promise.resolve().then(() => {
+	console.log(0)
+	return Promise.resolve(4)
+}).then(res => {
+	console.log(res)
+})
+
+Promise.resolve().then(() => {
+	console.log(1)
+}).then(() => {
+	console.log(2)
+}).then(() => {
+	console.log(3)
+}).then(() => {
+	console.log(5)
+}).then(() => {
+	console.log(6)
+}) 
+
+// return 普通的基本数据类型，那么是直接加入到microTaskQueue中
+// return 一个thenable对象，那么会多加一层microTask，等于有两个MicroTask，再加入到MicroTaskQUeue中
+// return 一个Promise，那么会多加两层微任务（因为不是基本数据类型，多加一层，因为要then，所以再加一层）
+```
+
+```javascript
+async function async1() {
+	console.log('async1 start')
+  await async2()
+  console.log('async1 end')
+}
+
+async function async2() {
+  console.log('async2')
+}
+
+console.log('script start')
+
+setTimeout(() => {
+  console.log('setTimeout0')
+}, 0)
+
+// 300ms之后加入MicroTask
+setTimeout(() => {
+  console.log('setTimeout2')
+}, 300)
+
+setImmediate(() => {
+  console.log('setImmediate')
+})
+
+// 在所有的microTask中优先执行
+process.nextTick(() => console.log('nextTick1'))
+
+async1()
+
+process.nextTick(() => console.log('nextTick2'))
+
+new Promise(function (resolve) {
+  console.log('promise1')
+  resolve()
+  console.log('promise2')
+}).then(function () {
+  console.log('promise3')
+})
+
+console.log('script end')
+
+/**
+* script start
+* async1 start
+* async2 
+* promise1 
+* promise2
+* script end 
+* nexttick1
+* nexttick2
+* async1 end
+* promise3
+* setTimeout0
+* setImmediate
+* setTimeout2
+*/
+```
+
+## 16. Error Handling
+
+### 16.1 Throw Error
+
+当代码抛出异常后，后续代码就不能继续执行
+
+```js
+class MyError {
+    constructor(err_code, err_msg) {
+        this.err_code = err_code
+        this.err_msg = err_msg
+    }
+}
+```
+
+默认的Error类，new Error(message: string)
+
+会抛出异常和详细的函数的调用栈
+
+一些子类
+
+- RangeError
+- TypeError
+- SyntaxError
+
+处理异常的方案：
+
+- 继续向函数调用栈的上层抛出异常
+- try catch block来捕获异常,finally的代码一定会执行
+
+## 17. 模块化开发
+
+将代码划分成为不同的小的结构，每个结构有属于自己的代码逻辑，有自己的作用域，同时可以将内部的变量，函数方法等导出
+
+不同文件之间的变量冲突？
+
+使用立即执行函数包裹代码，避免变量冲突。同时将变量return出去，然后拿到变量
+
+```js
+// a.js
+var moduleA = (function() {
+    var flag = true
+    var name = "123"
+
+    return {
+        flag,
+        name
+    }
+})()
+
+// b.js
+var moduleB = (function () {
+    var flag = false
+    var name = "fff"
+
+    return {
+        flag,
+        name
+    }
+})()
+
+if (moduleA.flag) {
+    console.log(moduleA.name)
+}
+```
+
+### 17.1 Commonjs 规范
+
+Commonjs核心关键词 Module.exports,exports, require
+
+导入导出的原理：因为导出的是对象，是引用数据类型，那么就有地址。module.exports = obj，等于module的exports属性指向了obj，同时require的时候通过os找到module.exports也可以找到这个对象。同时指向这个地址。
+
+```javascript
+module.exports = {}
+exports = module.exports
+export.name = name
+
+const name = require('...')
+```
+
+如果exports = {name, age}，会有问题，因为{name, age}是一个新的对象，会导致module.exports和exports脱钩
+
+Require的查找规则：
+
+- require node的一个核心模块，如path，fs等，会返回对应的对象
+- require 当前project的文件，如果没有后缀名，那么查找的顺序是js》json〉node，如果找不到，就找的是path/index.js>path/index.json>path/index.node
+
+模块在第一次加载时，会被运行一次，多次引用之后会被缓存，每个module都有一个属性loaded，一旦被引用之后loaded为true
+
+Node如果循环引用的话，那么会用深度优先搜索。
+
+Commonjs的缺点
+
+- commonjs同步加载，容易阻塞Dom的操作
+- Webpack中或者server中使用是没有问题的
+
+### 17.2 ES Module
+
+#### 17.2.1 import和export关键字
+
+- import 和 export的关键字
+- 编译器静态分析，也可以动态引用
+- 自动使用了use strict 严格模式
+
+export的导出形式
+
+```javascript
+export const name = 'rzh'
+
+const name = 'rzh'
+export {
+	name
+}
+
+export {
+	name as myname
+}
+```
+
+import的导入形式
+
+```javascript
+import {name} from '..'
+
+import {name as myname} from '..'
+
+import * as myname from '..'
+```
+
+特殊的一些导入导出方式
+
+```javascript
+export {name, age} from '@/path'
+
+export * as obj from '@/path'
+
+/**
+* 默认导出只能存在一个
+*/
+export {
+	name,
+  age,
+  foo as default
+}
+
+export default foo
+```
+
+上面所有的代码都是同步执行的
+
+#### 17.2.2 import函数
+
+import函数返回的结果是一个Promise，内部会调用resolve函数。使用import('').then(res => )，res是拿到的导入的对象.
+
+会进行异步的原因是下载js文件是在浏览器的thread中进行的，但是编译阶段需要由js来执行。直接使用import关键字相当于执行了下载+编译，那么必须是同步执行代码流程的。但是import函数封装了promise，先执行下载，然后到需要使用的时候在调用then方法进行编译。
+
+import的meta属性，包含当前文件的url
+
+#### 17.2.3 ES module的原理
+
+1. 构建（Construction）：根据地址，查找js文件，下载，解析成为module record（静态分析）
+2. 实例（Instantiation）：对module record进行实例化，然后分配内存空间，将模块指向对应的内存地址。
+3. 验证（Evaluation）：运行代码，计算值，填充到内存地址中
+
+所以说模块化的相关代码是优先运行的，分配空间地址，值为undefined，之后运行main script，更新值
+
+构建阶段只会分析静态代码，所以import语句声明最好全部放在最上方
+
+导入和导出都会绑定到module record的实例，当运行代码更新module record之后，导入的值也会进行相应的变化。**mention：单向数据流，import 进来的object不能随便修改值，被lock住了**
+
+### 17.3 Commonjs和EsModule相互引用
+
+使用commonjs导出，使用ESModule导入
+
+- 在浏览器中是不能识别Commonjs的，所以相互引用在浏览器中是不行
+- 在node环境中，需要区分node的版本，有些node版本不支持esmodule
+- Webpack中EsModule和Commonjs都是可以使用的，因为webpack会用babel最后转化成ES5的代码
+
+## 18. 包管理工具：npm, yarn, npx
+
+
+
+# React
+
+## 1. Redux
+
+redux的核心概念：store, action, reducer
+
+store：将所有的state存储到一个独立的空间中，方便track state
+
+action：dispatch action，action是一个对象，type和content
+
+reducer：处理完action之后，更新store中的state
+
+原则：
+
+1. 单一的数据源，保证只有一个store
+2. state是read-only的，只能通过action触发修改state，不需要考虑race condition
+3. 所有的reducer函数都必须要是纯函数
+
+```
+通过源代码，我们发现，`var nextStateForKey = reducer(previousStateForKey, action)`, \**nextStateForKey\**就是通过 reducer 执行后返回的结果(state)，然后通过`hasChanged = hasChanged || nextStateForKey !== previousStateForKey`来比较新旧两个对象是否一致，此比较法，比较的是两个对象的存储位置，也就是浅比较法，所以，当我们 reducer 直接返回旧的 state 对象时，Redux 认为没有任何改变，从而导致页面没有更新.
+```
+
+所以在reducer中必须返回一个新的对象，这是为了节省javascript的性能，不然每次都要深拷贝。
+
+如何在react中使用redux？
+
+1. 在useEffect中使用subscribe，对数据进行订阅
+2. 使用高阶函数把redux的相关代码抽离出去，并且混入进不同的component
+
+Redux的异步操作：
+
+在请求和响应之间加入一些代码，被称为中间件，在redux中反映为action和reducer
+
+Redux-thunk: 让dispatch也可以传入函数，调用函数
+
+```javascript
+// App.js
+dispatch(getData)
+// actionCreators.js
+const getData = (dispatch, getState) => {
+	axios.get('').then(res => {
+		dispatch(changeData(res.data))
+	})
+}
+```
+
+Redux-Thunk的实现：Monkey-patch
+
+```javascript
+function thunkPatch(store) {
+	const next = store.dispatch
+	function dispatch_thunk(action) {
+		if (typeof action === "function") {
+			action(store.dispatch, store.dispatch)
+		} else {
+			next(action)
+		}
+	}
+	store.dispatch = dispatch_thunk
+}
+```
+
+
