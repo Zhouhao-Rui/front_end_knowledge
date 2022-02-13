@@ -1,3 +1,157 @@
+
+
+# HTML和浏览器
+
+## 1. Http和Https
+
+https的ssl加密是在传输层进行实现的。
+
+Http: hyper text transportation protocol, 是客户端和服务器端请求和应答的标准(TCP)，从WWW浏览器传输超文本到本地的浏览器。
+
+Https: 在Http下加入了SSL层，Https的安全基础是SSL，加密的详细内容需要使用SSL
+
+- https使用了SSL protocol对http协议传输的数据进行了加密，构建了可加密传输和身份认证(identification authentication) 的网络协议，安全系数更高
+
+- Https协议需要用CA证书，费用较高
+
+- Http传输端口是80，https传输端口是443
+
+Https工作流程：
+
+- http url访问服务器，要求web服务器建立SSL连接
+- web服务器收到请求后，会将网站的证书（public key），传输给客户端
+- client和server开始协商SSL的安全等级
+- client建立会话密钥(session key)，通过公钥来加密，传送给server
+- server通过private key解密
+
+Https 降低了man-in-the-middle attack
+
+Https的缺点：
+
+- Handshaking is time-consuming 
+- SSL CA costs more money
+- one IP to one SSL CA, not flexible.
+
+## 2. TCP 和 UDP
+
+### 2.1 TCP handshaking
+
+- client sends request to the server with Syn=1, and servers gets the request data. This shows that the server can receive data successfully.
+- server sends response to the client with Syn=1 and acknowledgement, and the client receive the response. This shows that the server can receive and send data normally. At the same time, the clinet can also successfully send and receive data.
+- Client again sends the data to the server. The server can confirm that the response has been received from the client successfully.
+
+### 2.2 TCP和UDP
+
+- Once TCP is established, the data can be transmitted in bi-directions. TCP has built-in system to check if the data is transmitted successfully. It's needs higher bandwidth, and it's used for web page, image...
+- UDP is connectionless internet protocol, data is continuously sending from the sender to the receiver, no matter whether the receiver has got the data. (Broadcast, long-connection)
+
+DIfference:
+
+- TCP is connection-oriented and more reliable, UDP is connectionless.
+- TCP make sure the low data loss and high data accuracy during transmission, UDP focuses on transmitting huge amount of data continuously.
+- TCP is for data stream, but the UCP is for datagram, and won't slow down data sending frequency with network congestion. It is easy for UDP to get data loss.
+- TCP is one-to-one, UDP is broadcasting.
+
+## 3. WebSocket
+
+Websocket 是HTML5中的协议，支持long connection，http不支持long connection。
+
+html 1.1中使用了**keep-alive**，可以将多个request合并为一个request，并且接受response
+
+Websocket比普通的http多了upgrade和connection两个属性
+
+- upgrade: Websocket
+- connection: upgrade
+
+## 4. Http请求方式和请求头
+
+### 4.1 HTTP Header
+
+HTTP header carrys the case-sensitive addtional information with HTTP request and response. 
+
+general header: used in the request and response, but its content is not related to the data transmission.
+
+request header, response header
+
+Entity header: contains the information about the body of the resource.
+
+payload header: contains representation-independent information about payload data.
+
+### 4.2 Http request method
+
+Get: should only retrive data
+
+Head: Like get method, but only request the header
+
+Post:  submits an entity to the specified resource, often causing a change in state or side effects on the server.
+
+Put: replaces all current representations of the target resource with the request payload.
+
+**The difference between put and post is that put is idempotent, calling it once or several time it has the same effect.**
+
+Put 用相同的payload多次更新一个资源，是不会
+
+POST所对应的URI并非创建的资源本身，而是资源的接收者。比如：POST [http://www.forum.com/articles](https://link.jianshu.com?t=http%3A%2F%2Fwww.forum.com%2Farticles)的语义是在[http://www.forum.com/articles](https://link.jianshu.com?t=http%3A%2F%2Fwww.forum.com%2Farticles)下创建一篇帖子，HTTP响应中应包含帖子的创建状态以及帖子的URI。两次相同的POST请求会在服务器端创建两份资源，它们具有不同的URI；所以，POST方法不具备幂等性。而PUT所对应的URI是要创建或更新的资源本身。比如：PUT [http://www.forum/articles/4231](https://link.jianshu.com?t=http%3A%2F%2Fwww.forum%2Farticles%2F4231)的语义是创建或更新ID为4231的帖子。对同一URI进行多次PUT的副作用和一次PUT是相同的；因此，PUT方法具有幂等性。
+
+Delete: Delete the corresponding resource.
+
+Options: Ask for the communication options
+
+Connect:  establishes a tunnel to the server identified by the target resource.
+
+Patch: applies partial modifications to a resource.
+
+### 4.3 HTTP status code
+
+200: request successfully
+
+201: POST or PUT, successfully created resource
+
+204: No content, only contains the header
+
+300: The request has more than one responses, user needs to choose one from them
+
+301: The URL has been replaced permanently. 
+
+304: The response has not been modified, user can use the cache version of the response.
+
+400: Bad request, has syntax error
+
+401: Unauthorized, user may need api key or token.
+
+403: Forbidden, has no priority to access the resource.
+
+404: Not found
+
+405: Method not allowed, like POST or PUT
+
+500: Internal Internet server Error
+
+502: This error response means that the server, while working as a gateway to get a response needed to handle the request, got an invalid response. (Nginx proxy server)
+
+503: service unaviable
+
+504: gateway timeout
+
+## 5. BOM
+
+Bom is Browser Object Model, which is Window. Window is the global object in the browser.
+
+- location
+  - location.href
+  - location.search: search one url
+  - location.hash: return the string after #
+  - location.pathname
+  - location.hostname
+  - location.reload
+  - Location.replace
+- history
+  - history.go()
+  - histroty.back()
+  - history.forward()
+- navigator
+  - navigator.cookieEnabled
+
 # Javascript
 
 ## 1. 浏览器工作原理
@@ -3712,7 +3866,69 @@ import的meta属性，包含当前文件的url
 
 ## 18. 包管理工具：npm, yarn, npx
 
+### 18.1 Npm
 
+Npm publish to registry, then npm install the corresponding packages.
+
+Npm: Node package manager
+
+根据package.json中的dependencies和devDependencies进行第三方库的安装
+
+PeerDependencies:和这些库同等依赖，最好一起安装，如React+React-Dom+antDesign
+
+Semver 版本规范X.Y.Z
+
+X: 做了可能不兼容之前API的修改
+
+Y: 新功能的增加，同时向下兼容
+
+Z: 没有新功能，只是Fix了部分bugs
+
+Npm install 下载的是压缩包，里面有配置文件，每次下载之前会比对一下版本，如果版本号相同，就会直接解压package
+
+package-lock.json 检测依赖的一致性，查找缓存
+
+npm cache clean 清除缓存
+
+### 18.2 Yarn
+
+Yarn是npm的代替工具，fb推出的
+
+命令和npm有些不一样，其他都差不多
+
+### 18.3 Npx
+
+常用的是调用项目中的模块，比如全局和局部都有webpack(3/4)，直接使用webpack会查找到全局的webpack
+
+```javascript
+webpack --version 3
+
+npx webpack --version 4
+```
+
+## 19. JSON
+
+JSON是一种数据格式，帮助数据在前端和后端之间进行传输（javascript object notation)
+
+- 网络传输数据
+- 项目的配置文件
+- NoSql将json作为存储格式
+
+JSON数据的形式
+
+- Object
+- Array
+- 基本数据值
+
+JSON序列化
+
+例如Object转字符串 变成了"Object obejct"
+
+JSON.stringfy + JSON.parse, stringfy可以加replacer参数，设置哪些内容需要转化
+
+如果对象中含有一个toJSON方法，那么会直接调用toJSON的方法进行序列化
+
+利用JSON进行深拷贝
 
 # React
 
@@ -3776,4 +3992,339 @@ function thunkPatch(store) {
 }
 ```
 
+# VUE
 
+## VueX
+
+state的管理方式：
+
+- setUp中的响应式数据(Ref和reactive)，通过props或者context传递数据（层级太深，如何维护sibling nodes？）
+- Redux 进行状态管理
+
+Vuex的核心要素：
+
+- state：在VueX状态管理仓库里面保存的state($store.state.xx)
+- Action：异步请求的数据由action完成 （redux-thunk）
+- Mutation：提交修改，修改store中的状态
+
+mutation如果进行异步操作，没法及时的生成snapshot，提交到dev-tools进行状态追踪。
+
+单一状态树（single source of truth）：用一个对象来包含所有应用层级别的状态，仅仅使用一个store，但不同模块可以进行抽离
+
+mapState，mapSetters，mapMutations，mapActions可以将$store.state在setup中进行映射
+
+```javascript
+import { createStore } from 'vuex'
+
+export default createStore({
+  state() {
+    return {
+      counter: 0,
+      name: 'name',
+      age: 17,
+      books: [
+        { price: 1, count: 2 },
+        { price: 2, count: 1 },
+        { price: 3, count: 6 }
+      ]
+    }
+  },
+  getters: {
+    totalPrice(state) {
+      return state.books.reduce((pre, cur) =>
+        pre + cur.price * cur.count
+        , 0)
+    },
+    totalPriceGreaterN(state) {
+      return function (n) {
+        if (state.books.length > n) {
+          return state.books.reduce((pre, cur) =>
+            pre + cur.price * cur.count
+            , 0)
+        } else {
+          return 'No'
+        }
+      }
+    }
+  },
+  mutations: {
+    increment(state) {
+      state.counter++
+    },
+    decrement(state) {
+      state.counter--
+    },
+    incrementN(state, num) {
+      state.counter += num
+    }
+  },
+  actions: {
+    asyncFn(context, num) {
+      console.log(num)
+      setTimeout(() => {
+        context.commit('incrementN', num)
+      }, 1000)    
+    }
+  },
+  modules: {
+  }
+})
+
+```
+
+不同module的命名空间：module_name/action(state, ...)
+
+## Vue的nextTick原理
+
+vue的组件更新等其他操作都是microTask，为了让一些操作在update之后执行，可以用nexttick将部分代码也加入microtaskqueue，让它延迟执行。（一个tick之后执行）
+
+# Typescript
+
+对传入参数和返回值类型进行类型检测，javascript代码本身存在安全的隐患。所以要引入一种类型检测机制来规范代码
+
+webpack+babel进行转换代码，或者tcs(typescript compiler system)进行代码转化
+
+string,number对应的是typescript的数据类型，String,Number对应的是javascript中的wrapper class
+
+类型推断，即使没有声明类型，typescript也会根据声明的值进行相应的推断
+
+数据类型：
+
+- number
+- string
+- Array[string] 容易和jsx语法冲突，string[]
+- object （最好不要用）
+- null （只针对null这一个关键字）
+- undefined
+- Symbol类型
+- any
+- unknown：类型不确定，unknown只能赋值给any和unknown类型，any可以赋值给任意类型
+- void：指定一个函数没有返回值
+- never：永远不会出现的值，死循环或者抛出异常
+
+```typescript
+function handleMessage(message: number | string | boolean) {
+	switch (typeof message) {
+		case "string":
+			...
+		case "number":
+			...
+		default:
+			const check: never = message
+	}
+}
+```
+
+- Tuple: 多种不同数据类型的组合，是array类型的一种优化
+
+```typescript
+const _tup: [number, string, number] = [1, '22', 2]
+
+console.log(typeof _tup[0])
+```
+
+- 函数类型：() => void
+
+  上下文的函数可以不加类型注解，类似map, forEach, filter等高阶函数
+
+- 对象类型：{x: number, y:number}
+
+可选类型，?x，代表x这个参数可以不传
+
+联合数据类型 string | number | boolean
+
+类型断言(相当于父子类类型转换)：有的时候无法获取到非常具体的数据类型，那么就可以进行断言
+
+```typescript
+const el = document.getElementById("img") as HTMLImgElement
+```
+
+非空类型断言：在变量后面加！
+
+可选链：?. 对象属性不存在，直接返回undefined，如果有值，才会运行代码
+
+```typescript
+info.friend?.age
+info.friend?.name
+```
+
+!!: 将其他的类型转换成boolean类型
+
+??: 左侧是undefined或者null时，返回右侧具体的值
+
+字面量类型，当variable是一个constant，那么他就直接是一个字面量，即类型和值是一致的（结合联合类型）
+
+```typescript
+let direction: 'left': 'right': 'up' = 'left'
+```
+
+类型缩小（type narrowing) 类型保护（type guarding)：typeof / instanceof / in / ===
+
+in：某个属性是否在某个字面量对象中
+
+函数类型：
+
+```typescript
+// 如果是可选参数，那么需要放在必选参数的后面
+// 使用默认值，可以传入undefined
+const add: (num1: number, num2: number) => number = (num1: number, num2: number) => {
+    return num1 + num2
+}
+```
+
+函数的overload
+
+不同的函数只定义，不实现，后面使用一个函数提供具体的实现
+
+如果联合类型和overload都可以实现，那么使用联合类型
+
+```typescript
+function add(num1: string, num2: string): number
+
+function add(num1: number, num2: number): string
+
+function add(num1: any, num2: any) {
+    return num1 + num2
+}
+
+console.log('123', '22')
+```
+
+类
+
+类的继承和多态
+
+修饰符：public，protected（内部和子类能够访问），private
+
+readonly：属性只能访问，不能修改，只能在构造器里面赋值
+
+setters/getters: set name(newName) {this._name = newName}
+
+```typescript
+// inheritance
+class Person {
+    name: string
+    age: number
+
+    constructor(name: string, age: number) {
+        this.name = name
+        this.age = age
+    }
+
+    eating() {
+        console.log(this.name + " is eating...")
+    }
+
+}
+
+const p = new Person("rzh", 18)
+p.eating()
+
+class Student extends Person {
+    sno: number
+    constructor(name: string, age: number, sno: number) {
+        super(name, age)
+        this.sno = sno
+    }
+
+    eating(): void {
+        super.eating()
+        console.log(`student ${this.name} eating...`)
+    }
+
+    studying() {
+        console.log(this.name + ' is studying...')
+    }
+}
+
+// 多态
+// 父类Animal指向了子类对象new Dog()
+Animal dog = new Dog()
+
+```
+
+抽象类
+
+```typescript
+// 抽象类不能被实例化，且抽象方法必须被子类实现
+abstract class Shape {
+    abstract getArea(): number
+}
+
+class Rectangle extends Shape {
+    private x: number
+    private y: number
+    constructor(x: number, y: number) {
+        super()
+        this.x = x
+        this.y = y
+    }
+
+    getArea(): number {
+        return this.x * this.y
+    }
+}
+```
+
+类可以作为变量的类型，必须有对应的属性和方法
+
+Interface
+
+- 可以作为一个类型声明
+- 可以作为索引类型
+- 可以作为函数
+- 可以定义同样名称的接口，同时能把interfaces合并
+
+intersaction type: x & y，同时具备x和y的所有特性
+
+接口和abstract class最大的差别：一个是多继承，一个是单继承
+
+枚举类型
+
+```typescript
+// 默认值是0，1，2...递增的
+Direction {
+	LEFT,
+	RIGHT,
+	UP,
+	DOWN
+}
+
+Direction.LEFT
+```
+
+泛型
+
+将类型参数化，让调用者决定具体的类型
+
+```typescript
+function sum<T, E> (num: T, num2: E) {
+	return num1 + num2
+}
+
+sum<number, string>(10, '2')
+```
+
+命名空间 namespace
+
+```typescript
+namespace time {
+	export function format() {
+		return '2020:03'
+	}
+}
+
+namespace math {
+	export function format() {
+		return 123.123
+	}
+}
+
+math.formart()
+```
+
+类型查找：
+
+内置类型声明 例如document等 lib.dom.d.ts
+
+第三方库的类型声明文件，需要下载对应的d.ts文件
