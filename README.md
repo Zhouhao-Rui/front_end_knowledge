@@ -152,6 +152,807 @@ Bom is Browser Object Model, which is Window. Window is the global object in the
 - navigator
   - navigator.cookieEnabled
 
+
+
+# 网页性能优化(optimization)
+
+# CSS
+
+## 1. head
+
+head中一般存放metadata
+
+- title
+- meta charset 字符编码设置 utf-8 
+- Style: 样式
+- link: 链接css文件
+- script
+
+## 2. SEO(search engine optimization) and h element
+
+SEO 在搜索引擎的时候会优先爬h1元素，所以一个网站最好只有一个h1元素
+
+## 3. element
+
+Code: 将其中的元素的font-family改变
+
+br：换行符
+
+hr：水平分割线
+
+Pre: 对空行和空格进行控制(space and empty line)
+
+&nbsp:空格 &gt:大于 &lt:小于
+
+span：用于区分普通的文本和特殊的文本
+
+Div: 块级元素，可以将同一类的元素包裹分类
+
+img：src，alt，width，height（如果只设置了width或者height，会自动拉伸）
+
+**a: href ｜ target｜ anchor（锚点）｜fake href #(是指向了页面的顶部) javascript:（可以写javascript代码）
+
+- blank：打开一个新的标签页
+- parent：在浏览器的标签页打开
+- top：iframe嵌套时，会在顶层的iframe打开
+- name：指定一个iframe打开
+
+Iframe: 可以放入网页nested browser content（src）
+
+**base（在header中）：可以给a元素指定一个base url和target方式
+
+```html
+<base href="www.google.com" target="_blank">
+```
+
+## 4. Css
+
+指定编码 @charset “utf-8”
+
+导入外联 @import(url)
+
+选择器（selector）：
+
+- universal selector
+- type selector
+- class seletor
+- id selector
+- attribute selector：[title] [title="hello"] [title*='hello'] (通配)
+- combinations
+- pseudo classes
+- pseudo elements
+- descendant combinator: 
+  - div span 间接选择器
+- child combinator
+  - Div > span 必须是div的子类，直接选择
+  - 但如果element的顺序反了，比如p里面包含div，则不能识别
+- adjacent sibling combinator
+  - div+p (只选择相邻的那个p)
+- All sibling combinator
+  - Div ~ p
+- intersection combinator
+  - Div.title
+- union combinator
+  - .title, #content, 
+
+attributes:
+
+- color: foreground color
+
+- Background-color
+
+- width
+
+- Height
+
+- Outline: 和border一样是轮廓，但是outline不占宽度
+
+- Text-decoration: 给文本设置装饰线
+
+  - underline
+  - overline
+  - line-through
+  - none
+
+- Letter-spacing: Add horizontal spacing behavior between letters
+
+- Word-spacing: Add horizontal spacing behavior between words
+
+- Text-transform: 字符转换，capitalize（首字母大写）,uppercase, lowercase
+
+- Text-indent: 首字母缩进(2em)
+
+- Text-align: left, right, center,justify左右两边间距等分到中间，最后一行没效果（图片，文字都可以排版）
+
+- Font-size: em和百分比，根据父级的font-size进行计算，1em=原来的font-size
+
+- Font-family: 设置一个或者多个字体
+
+- Font-weight: 100-900,normal:400 bold:700
+
+- Font-style: i和em标签都会使用到italic
+
+  - italic：如果font family不支持italic，那么无效
+  - oblique：文本倾斜显示
+
+- font-variant：small-caps 小型大写字母
+
+- Line-height: 设置文本的最小行高
+
+  - 行高：两行文字baseline之间的距离，对齐x元素的底部，相当于文字高度+行距
+  - 行距：文字空白部分的距离，上下等分
+
+  **所以line-height如果等于div的height时，等于上下垂直居中**
+
+- font：{style variant weight} font-size/line-height font-family(不可以省略)
+
+### pseudo class
+
+:link, :active, :hover, :target(锚点), :enabled :disabled :checked
+
+dynamic pseudo class:
+
+- A:link 未访问的链接 a:visited 访问过的链接
+- a:hover a:active
+- :focus
+
+链接 选中效果不消失，因为已经在了缓存中
+
+structual pseduo class
+
+- :nth-child(1)
+- :nth-child(2n)
+- :nth-child(2n-1)
+- Nth-of-type(n)
+- first-child
+- Last-child
+- Only-child
+- empty 没有子元素的元素
+- not(element) element可以是任意的selector
+
+```html
+<div>
+	<div>1</div>
+	<p>2</p>
+	<p>3</p>
+</div>
+```
+
+P:nth-child(2) 会是2
+
+P:nth-of-type(2) 会是3
+
+因为nth会去找父元素，然后在里面找第n个
+
+### pseduo elements
+
+::first-line ::first-class ::before ::after
+
+```
+::before {
+	content: url()
+	font-size: ''
+	clear: both 清除浮动
+}
+```
+
+### Css 特性
+
+- 继承
+
+  - font-size
+  - color
+  - Font-weight
+  - font-family
+  - text-indent
+  - text-style
+  - text-align
+  - line-height
+  - word-spacing
+  - Letter-spacing
+  - text-transform
+  - color
+  - list-style
+  - cursor
+  - 继承的是计算值，比如1em会进行换算后，直接继承px值
+
+- 层叠
+
+  - 选择器的权重不同
+    - !important: 10000
+    - Line-style: 1000
+    - id: 100
+    - Class, pesudo-class, attractive: 10
+    - Element: 1
+    - *: 0
+  - 优先比较priority的选择器的个数
+  
+  
+
+### 列表
+
+ol, li; ul, li;
+
+Dl dt dd (dl：definition list；dt：define type；dd：define description)
+
+List-style-type: 设置li前面标记的样式（decimal，upper-roman）
+
+list-style-image: 设置li前面标记为图片
+
+### 表格
+
+Tr: table row
+
+Td: table decription
+
+cellpadding:单元格内部间距, cellspacing: 单元格之间的间距,border, width, align:对齐方式，center，left，right
+
+tr -> valign align
+
+Td -> valign align width height rowspan colspan(单元格合并)
+
+Border-clloapse: 边框合并
+
+caption，tbody，thead, th
+
+Border-spacing: 边框的上下左右的margin
+
+### 表单
+
+input type: text, password, checkbox(name), button,radio(name),file, submit, reset
+
+fieldset+ legend: 表单外边框+说明
+
+select+options：下拉菜单 multiple selected
+
+textArea rows cols resize：none禁止用户拖放textarea
+
+placeholder, maxlength, readonly, disabled, checked（默认被选中), autofocus
+
+Submit: action 类似 http://google.com target: 打开页面位置
+
+label for=""，里面是input的id
+
+enctype: application/x-www-form-urlencoded / form/multidata
+
+### Block/line element/ box-sizings
+
+块级：独占父元素的一行，div, p, h1-h6, pre, ul, li
+
+行内级：a,ima,iframe,strong,span,code,input
+
+替换级：内部的value会被一些内容替换， input，iframe，video等，可以设置宽高
+
+非替换级：内部的value是由text或者一些其他的东西决定，a,span，label等，不可以设置宽高
+
+display：block，inline-block（在同一行显示，同时可以设置宽度和高度），inline
+
+Line-table: 在行内级显示的table
+
+Display: none 元素不再占据空间，也不再显示
+
+Visiablity：visable, hidden 元素会隐藏，但是依然会占据原来的空间
+
+overflow: visiable, hidden,scroll,auto（如果溢出了显示滚动条，否则没有滚动条）
+
+**行内级元素之间有空格解决方案**
+
+父元素中font-size：0，让子元素去覆盖
+
+加入float
+
+margin auto：如果是inline元素，包裹内容；如果是块级元素，独占一行
+
+Min-width, max-width
+
+Max-width max-height
+
+Word-break
+
+```html
+<div>
+ssssssssssssssssssssssssss
+</div>
+```
+
+这样子会把这些字母当成一个单词，所以需要使用word-break: break-all 来进行单词分割
+
+**上下margin会进行传递，子元素如果和父元素的顶部重叠，给子元素设置margin-top的时候，相当于只给父元素设置了margin-top，同样作用于margin-bottom（父元素的大小是auto）**
+
+可以设置padding-top，padding-bottom，border解决
+
+overflow：hidden  触发BFC
+
+**如果上下两个margin都设置了margin-top和margin-bottom，那样有可能会把两个margin合并成为一个margin，这个称之为collapse，max(margin-top, margin-bottom)**
+
+Border-style:
+
+- solid
+- dashed
+- doubled
+- dotted
+- Inset,outset
+- ridge, groove
+
+**实现三角形**
+
+利用border比content大，border会进行等分，那么如果content无限小，左边border和上面的border会在对角线进行等分，出现三角形
+
+```css
+.tri {
+	width: 0;
+	height: 0;
+	
+	border-left: 50px solid black;
+	border-top: 50px solid green;
+	border-bottom: 50px solid red;
+	border-right: 50px solid blue;
+}
+```
+
+inline元素css不生效：
+
+- margin-top
+- margin-bottom
+- height
+- width
+
+margin-left和margin-right是生效的
+
+padding-top和padding-bottom会生效，但是不会占据空间，所以bottom或者top的元素不会变化
+
+border-radius 的值相当于四个角的直径值，所以如果宽度一半是border-radius，就变成了圆形
+
+**box-shadow**
+
+Box-shadow: inset? Length{2, 4} color?
+
+Length: 水平偏移 垂直偏移 模糊半径 延伸距离
+
+**text-shadow**
+
+Text-shadow：length{2,3} color?
+
+length：水平偏移 垂直偏移 模糊半径
+
+**box-sizing**
+
+- Content-box 内容盒子：设置width和height时，只是指定了内容的宽高
+- border-box 边距盒子：content+border+padding 如果设置了padding，相当于内减
+
+### css居中
+
+- 普通的文本: text-align:center
+- 行内元素：text-align: center
+- 图片 text-align：center（因为是inline-block）
+- inline-block元素: text-align: center
+- 块级元素：margin：0 auto（同时还得width《父元素）
+
+margin：0 auto的原理：
+
+Margin-right:auto + margin-left:auto，auto的意思是将剩余空间全部分配，相当于left和right均分
+
+垂直不能设置auto，因为默认值是0
+
+**margin-top百分比参考的是width，所以margin-top：50%会比预想中多很多**
+
+background-position （right bottom）或者直接用px
+
+background-attachment local背景图片会随着文字滚动而滚动 fixed 背景不会随box滚动
+
+**img和background-image的选择：**
+
+img有seo优化，因为有alt属性
+
+img优先加载，background需要等相应的元素加载完，再根据css的background下载对应的图片
+
+cursor: auto / text / pointer / default
+
+**标准流 （normal flow）**
+
+margin,padding和inline，block决定了定位的位置
+
+不利于进行元素的层叠
+
+定位，脱离标准流
+
+position:
+
+- relative：相对于标准流中的位置，改变位置
+- absolute：如果父元素是relative，根据父元素的左上角进行定位，否则继续往上找。如果没有relative，那么根据浏览器的视口进行定位。
+- fixed
+- Static
+
+脱离标准流元素的特点（fixed，absolute）：
+
+- 可以设置高度和宽度
+- 宽高默认情况下由内容决定的
+- 不再受标准流的约束
+- 和display的关系，脱离标准流之后会变成block,长宽变成了auto
+
+absolute：
+
+- 脱离标准流
+- left, right, top, bottom 进行元素的定位
+- 子绝父相
+- 绝对定位 margin-left + left + content + margin-right + right  = parent width/ margin-top + top + content + margin-bottom + bottom  = parent height
+- absolute 占据100%宽度和高度，除了100%设置，也可以left:0, bottom:0 或者 top:0, bottom:0 
+- Absolute 居中 left: 0, right:0, margin: 0 auto;
+
+### 居中的三种方式
+
+| Type        | Horizontal                       | Vertical                                                     |
+| ----------- | -------------------------------- | ------------------------------------------------------------ |
+| normal flow | Margin:0 auto                    | margin-top: 2/height of parent, transform: translate(2/height of self) |
+| flex box    | Justify-content: center          | align-items: center                                          |
+| Absolute    | Left: 0, right:0, margin: 0 auto | top: 0, bottom: 0, margin: auto 0                            |
+
+z-index：正整数，负整数，0，siblings，如果z越大，覆盖在上面，z如果相等，后写的覆盖在上面
+
+### Float
+
+一旦浮动，脱离标准流，朝着左边或者右边一直浮动，直到贴近父类元素或者其他浮动的元素的边界。
+
+- 定位元素会在float元素的上面
+- float不能和行内级元素重叠（inline-block，inline），但能和块级元素重叠
+- 浮动元素之间不能重叠
+
+文字环绕图片的效果：本来是因为vertical-align，导致文字和图片baseline对齐。但是一旦浮动，会脱离BFC，所以导致vertical-align失效，导致文字环绕的效果
+
+**高度坍塌：**
+
+因为一旦使用float，就会脱离标准流，那么就不会将高度汇报给父元素，最后div container认为没有高度，height：auto直接变成了0.
+
+解决办法：
+
+清除浮动，::after
+
+```css
+.container::after {
+  content: "";
+	clear: both;
+  display: block;
+}
+```
+
+### CSS3
+
+- tranform
+  - translate(x, y) 如果是百分比的话，是针对自身的width或者height
+  - Scale(x, y)
+  - rotate(deg) 正数是顺时针，负数是逆时针
+  - skew(deg, deg)
+  
+- transform-origin(x, y) 设置x和y，作为新的变形的原点
+
+- transition: transition-property, transition-duration, transition-timing-function, delay
+  - transform or others with pseudo class
+  - ms
+  - ease, ease-in ease-out linear
+  - ms
+  
+- keyframe
+  
+  - @keyframe
+  
+  ```css
+  @keyframe test {
+  	0% {
+  		transform: translate(0, 0)
+  	}
+  	
+  	25% {
+  		transform: translate(100, 0)
+  	}
+  	
+  	50% {
+  		transform: translate(200, 200)
+  	}
+  	
+  	75% {
+  		transform: translate(100, 0)
+  	}
+  	
+  	100% {
+      transform: translate(0, 0)
+  	}
+  }
+  
+  animation test 1000ms ease-in-out
+  ```
+  
+  
+
+**vertical-align**
+
+行盒：每一行都有一个行盒，将内容进行包裹，但是是baseline对齐的，所以会有padding，即便没有text
+
+使用vertical-align：middle，top等，可以消除这个多出来的padding。
+
+vertical-align是保证中心点和X的中心对齐的（但是文字下沉，导致中心点下沉），所以vertical-align的middle并不是真的居中
+
+**高斯模糊**
+
+fliter: blur(8px)
+
+### HTML5
+
+- 语义化标签
+
+  - Header
+  - nav
+  - Section
+  - article
+  - Footer
+  - aside
+  - 让tag name更语义化
+
+- 新增的标签
+
+	- video src controls / autoplay / muted
+  - audio src controls / autoplay / muted
+  
+- 表单扩展
+  - type: tele, date, time, email
+  
+  
+  
+### Flex
+- order
+  - 可以决定排列的顺序，值越小的排在越前面
+- align-self
+  - 可以跳出align-items的规则，比如align-items是center，可以自己是flex-end
+- flex-grow
+  - 根据比重，分配剩余的空间
+  
+- flex-shrink
+  - 如果宽度大于了容器宽度，那么根据shrink的比例进行缩放
+  
+- flex-basis
+  - 决定flex-item的宽度
+  
+- flex
+  - 是flex-grow ｜ flex-shrink | flex-basis的综合
+  
+
+### 字体
+
+- @font-face：src, font-family ，可以引用网络的字体
+
+-webkit-
+
+-moz-
+
+### 文字溢出
+
+```css
+text-overflow: ellipse;
+overflow: hidden;
+workspace: nowrap;
+```
+
+### 移动端适配
+
+header: 
+
+```html
+<meta name="viewport" content="width: device-width">
+```
+
+设置大小的单位：
+
+- px：像素
+- em：
+  - font-size:相对于父元素，em=1相当于100%
+  - Width：相对于自己的/父元素的font-size
+- %：
+  - font-size: 相对于父元素的font-size
+  - width：相对于父元素的width
+  - margin-top：相对于父元素的width
+- rem
+  - 相对的是root的font-size
+
+移动端适配：
+
+- 统一使用rem单位，对不同的元素进行配置
+- 针对不同的device，设置不同的font-size
+- @media screen and (max-width < 414px)
+
+# 数据结构算法
+
+## 排序算法
+
+简单排序：冒泡 - 选择 - 插入
+
+高级排序：希尔 - 快速
+
+### 冒泡排序
+
+从第一个开始，依次往后面进行排序和交换, 依次挑选出最大的，第二大的，。。。
+
+时间是 n + (n - 1) + (n - 2) + (n-3) + ... 1 = n(n - 1) / 2
+
+交换次数：n(n-1) / 2
+
+```javascript
+ArrayList.prototype.swap = function (m, n) {
+                var temp = this.arr[m]
+                this.arr[m] = this.arr[n]
+                this.arr[n] = temp
+            }
+
+            // 冒泡排序
+            ArrayList.prototype.bubblesort = function () {
+                for (let j = this.arr.length - 1; j > 0; j --) {
+                    for (let i = 0; i < j; i ++) {
+                        if (this.arr[i] > this.arr[i + 1]) {
+                            // swap
+                            this.swap(i, i + 1)
+                        }
+                    }
+                }
+            }
+```
+
+### 选择排序
+
+挑选出最小的一次，然后依次放入到左端
+
+时间是 n + (n - 1) + (n - 2) + (n-3) + ... 1 = n(n - 1) / 2
+
+交换次数：n-1
+
+```javascript
+ArrayList.prototype.selectsort = function () {
+                // start的位置动态决定
+                for (let j = 0; j < length - 1; j ++) {
+                    let min = j;
+                    for (let i = min + 1; i < length; i ++) {
+                        if (this.arr[min] > this.arr[i]) {
+                            min = i
+                        }
+                    }
+                    this.swap(min, j)
+                }
+            }
+```
+
+### 插入排序
+
+核心思想是局部有序，那么只需要将不有序的item和有序的进行比较
+
+```javascript
+ArrayList.prototype.insertsort = function () {
+                const length = this.arr.length
+
+                for (let i = 1; i < length; i ++) {
+                    // 获取i位置的元素，和前面的局部有序比较
+                    var temp = this.arr[i]
+                    var j = i
+                    while (this.arr[j - 1] > temp && j > 0) {
+                        this.arr[j] = this.arr[j - 1]
+                        j --
+                    }
+
+                    this.arr[j] = temp
+                }
+            }
+```
+
+### 希尔排序
+
+解决插入排序中可能出现的，最小项出现在最右边，导致全部遍历的问题
+
+**分组**
+
+间隔比较大，然后依次缩小间隔，最后间隔为1，就是插入排序
+
+不同的增量会导致不同的效率
+
+```javascript
+ArrayList.prototype.shellsort = function () {
+                const length = this.arr.length
+
+                // 初始化的增量
+                let gap = Math.floor(length / 2)
+
+                // 增量减小
+                while (gap >= 1) {
+                    // 拿到对应的元素
+                    for (let i = gap; i < length; i++) {
+                        var temp = this.arr[i]
+                        var j = i
+                        while (this.arr[j - gap] > temp && (j > gap - 1)) {
+                            this.arr[j] = this.arr[j - gap]
+                            j -= gap
+                        }
+                          // 将j元素复制到temp
+                        this.arr[j] = temp
+                    }
+                    gap = Math.floor(gap / 2)
+                }
+
+            }
+```
+
+### 快速排序
+
+相比于冒泡，在找到最大或者最小的元素后，以最小的代价放入到对应的位置
+
+使用归并的方式，分而治之
+
+- 选择一个pivot，然后放到最右边
+- 左右两个元素，设置pointer
+- left寻找比右边大的，right寻找比右边小的，然后交换
+- 重复以上步骤
+- 如果left=right,说明全部交换完了，然后left和pivot交换
+- 然后左边和右边重复上面的步骤
+
+如何选择pivot？
+
+- 随机数：本身就消耗性能，而且无法保证能选到中位数
+- 选择**头，中，尾**的中位数
+
+```javascript
+ArrayList.prototype.getPivot = function (left, right) {
+                const center = Math.floor((left + right) / 2)
+                if (this.arr[left] > this.arr[center]) {
+                    this.swap(left, center)
+                }  
+                if (this.arr[center] > this.arr[right]) {
+                    this.swap(center, right)
+                }
+                if (this.arr[left] > this.arr[center]) {
+                    this.swap(left, right)
+                }
+
+                this.swap(center, right - 1)
+
+                return this.arr[right - 1]
+            }
+
+            ArrayList.prototype.quicksort = function () {
+                this.quick(0, this.arr.length - 1)
+            }
+
+            ArrayList.prototype.quick = function () {
+                // 结束递归
+                if (left >= right) {
+                    return 
+                }
+                // 获取枢纽
+                let pivot = this.getPivot(left, right)
+                // 定义指针
+                let i = left
+                let j = right - 1
+
+                // 开始进行交换
+                while (i < j) {
+                    // 寻找合适的位置
+                    while (this.arr[++i] < pivot) {
+
+                    }
+                    while (this.arr[--j] > pivot) {
+
+                    }
+
+                    if (i < j) {
+                        this.swap(i, j)
+                    } else {
+                        break;
+                    }
+                }
+
+                // 将枢纽放置正确位置
+                this.swap(i, right - 1)
+
+                this.quick(left, i - 1)
+                this.quick(i + 1, right)
+            }
+```
+
+
+
 # Javascript
 
 ## 1. 浏览器工作原理
@@ -4328,3 +5129,4 @@ math.formart()
 内置类型声明 例如document等 lib.dom.d.ts
 
 第三方库的类型声明文件，需要下载对应的d.ts文件
+
