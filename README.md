@@ -4731,6 +4731,196 @@ JSON.stringfy + JSON.parse, stringfy可以加replacer参数，设置哪些内容
 
 利用JSON进行深拷贝
 
+## 20. BOM和DOM
+
+BOM是js和浏览器之间的桥梁，通过这些BOM对象来操作浏览器的
+
+- window：全局对象
+
+  - 全局对象 global object
+  - 窗口  属性，方法，事件监听
+
+  高度：
+
+  - window.height: 可视窗口的height
+  - window.clientHeight: 可视窗口的height
+  - window.innerHeight: 可视窗口+横向滚动条的高度
+  - window.outerHeight：可视窗口+横向滚动条+工具条
+
+  method：
+
+  - window.onload()
+  - Window.onfocus()
+  - window.onblur()
+  - window.onhashchange()
+
+  eventListener:
+
+  - window.addEventListener("click", function(e) {})
+  - window.removeEventListener("click")
+  - window.dispatchEvent(new Event("someevent"))  ==> window.addEventListener('someevent', () => {})
+
+- location：浏览器连接到对象的url
+
+  - location.href
+  - location.port
+  - location.protocol
+  - location.hash
+  - location.pathname
+
+- history：操作浏览器的历史
+
+  - history.pushState({name: ""}, "", "/")
+  - History.back()
+  - History.replace({name: ""})
+  - history.go()
+  - history.forward()
+
+- document：当前窗口操作文档的对象
+
+Dom: 文档模型，本质上都是document
+
+element.nodeName/nodeValue/nextSlibling/childNodes/lastChild/children/offsetTop
+
+### Event bubbling
+
+事件会从子元素传递到父类，一旦父类监听，可以得到事件流
+
+addEventListener第三个参数，useCapture：事件捕获，那么从外层传递到内层
+
+e.stopPropagation() 防止捕获和冒泡
+
+e.preventDefault() 阻止默认事件
+
+## 21. Debounce and Throttle
+
+Debounce: 计时器监听事件的执行，一旦一个时间段内没有新的event，调用fn（输入框）
+
+```javascript
+function debounce(fn, delay, immediate) {
+    let timer = null;
+    let isInvoke = false;
+    const _debounce =  function(...args) {
+        let _this = this;
+        if (timer) clearTimeout(timer)
+
+        if (immediate && !isInvoke) {
+            fn.apply(_this, args)
+            isInvoke = true
+        } else {
+            timer = setTimeout(() => {
+                fn.apply(_this, args)
+                isInvoke = false
+            }, delay)
+        }      
+    }
+
+    return _debounce
+}
+```
+
+Throttle：不需要等待，无论多少次，固定的频率执行一次fn（飞机大战）
+
+```javascript
+function throttle(fn, interval) {
+    let lastTime = 0
+    const _throttle = function(...args) {
+        const _this = this
+        const nowTime = new Date().getTime()
+        const remainTime = interval - (nowTime - lastTime)
+        if (remainTime <= 0) {
+            fn.apply(_this, args)
+            lastTime = nowTime
+        }
+    }
+
+    return _throttle
+}
+```
+
+```javascript
+function throttle(fn, interval, options = {leading: true, trailing: false}) {
+    const {leading, trailing} = options
+    let lastTime = 0
+    let timer = null
+    const _throttle = function(...args) {
+        const _this = this
+        const nowTime = new Date().getTime()
+        // 控制第一次是否触发事件
+        if (lastTime == 0 && !leading) lastTime = nowTime
+        const remainTime = interval - (nowTime - lastTime)
+        if (remainTime <= 0) {
+            if (timer) {clearTimeout(timer); timer = null}
+            fn.apply(_this, args)
+            lastTime = nowTime
+
+            return
+        }
+
+        if (trailing && !timer) {
+            timer = setTimeout(() => {
+                timer = null
+                lastTime = !leading ? 0 : new Date().getTime()
+                fn()
+            }, remainTime)
+        }
+    }
+
+    return _throttle
+}
+```
+
+## 22. Deep Clone
+
+```javascript
+function isObject(item) {
+    const type = typeof item
+    return item !== null && (type === 'function' || type === 'object')
+}
+
+function deepClone(origin_obj) {
+    if (typeof origin_obj === 'function') {
+        return origin_obj
+    }
+    if (!isObject(origin_obj)) {
+        return origin_obj
+    }
+    let new_obj = Array.isArray(origin_obj) ? []: {}
+    for (const key of Object.keys(origin_obj)) {
+        new_obj[key] = deepClone(origin_obj[key])
+    }
+
+    // Symbol的key特殊处理
+    const symbols = Object.getOwnPropertySymbols(origin_obj)
+    for (const sKey of symbols) {
+        new_obj[sKey] = deepClone(origin_obj[sKey])
+    }
+    return new_obj
+}
+
+const obj = {
+    name: 'rzh',
+    age: 18,
+    friend: {
+        name:'js',
+        address: {
+            city: 'shanghai'
+        }
+    },
+    hobbies: ['basketball', 'sa', '1cf'],
+    foo: function () {
+        console.log('foo')
+    }
+}
+
+const new_obj = deepClone(obj)
+console.log(new_obj === obj)
+obj.friend.name = 'ss'
+console.log(new_obj)
+```
+
+
+
 # React
 
 ## 1. Redux
